@@ -111,12 +111,12 @@ class ConnectionTest < Test::Unit::TestCase
     assert connection.http.proxy?
   end
   
-  def test_request_only_escapes_the_path_the_first_time_it_runs_and_not_subsequent_times
+  def test_request_does_not_double_escape_a_path_when_retrying
     connection     = Connection.new(@keys)
     unescaped_path = 'path with spaces'
     escaped_path   = 'path%20with%20spaces'
     
-    flexmock(Connection).should_receive(:prepare_path).with(unescaped_path).once.and_return(escaped_path).ordered
+    flexmock(Connection).should_receive(:prepare_path).with(unescaped_path).twice.and_return(escaped_path).ordered
     flexmock(connection.http).should_receive(:request).and_raise(Errno::EPIPE).ordered
     flexmock(connection.http).should_receive(:request).ordered
     connection.request :put, unescaped_path
